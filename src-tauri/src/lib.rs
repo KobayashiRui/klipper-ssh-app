@@ -1,14 +1,41 @@
+use std::sync::Mutex;
+use tokio::sync::Mutex as AsyncMutex;
+use tauri::{Manager, State};
+
+mod state;
+use state::AppState;
+
+mod ssh_client;
+use ssh_client::{SessionState, connect_ssh, send_ssh};
+
+
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
-fn greet(name: &str) -> String {
+fn greet(name: &str, state: State<'_, Mutex<AppState>>) -> String {
+
+    let mut state = state.lock().unwrap();
+    state.test= name.to_string();
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
+
+#[tauri::command]
+fn get_name(state: State<'_, Mutex<AppState>>) -> String {
+    let state = state.lock().unwrap();
+    format!("Get Name {}!", state.test)
+}
+
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .setup(|app| {
+            app.manage(Mutex::new(AppState::default()));
+            app.manage(AsyncMutex::new(SessionState::default()));
+            Ok(())
+        })
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![greet, get_name, connect_ssh, send_ssh])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
