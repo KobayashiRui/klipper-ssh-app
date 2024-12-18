@@ -62,7 +62,7 @@ impl Session {
         Ok(Self { session})
     }
 
-    pub async fn call(&mut self, commands: Vec<&str>) -> Result<u32> {
+    pub async fn call(&mut self, commands: Vec<&str>) -> Result<String> {
       let command = commands.join(";");
 
       let mut channel = self.session.channel_open_session().await?;
@@ -80,8 +80,12 @@ impl Session {
           match msg {
               // Write data to the terminal
               ChannelMsg::Data { ref data } => {
-                  stdout.write_all(data).await?;
-                  stdout.flush().await?;
+                return match String::from_utf8(data.to_vec()) {
+                    Ok(string) => Ok(string),
+                    Err(err) => Ok("error utf8".to_string())
+                };
+                //stdout.write_all(data).await?;
+                //stdout.flush().await?;
               }
               // The command has returned an exit code
               ChannelMsg::ExitStatus { exit_status } => {
@@ -92,7 +96,7 @@ impl Session {
           }
       }
       println!("END");
-      Ok(code.expect("program did not exit cleanly"))
+      Ok(code.expect("program did not exit cleanly").to_string())
     }
 
     pub async fn close(&mut self) -> Result<()> {

@@ -6,7 +6,10 @@ mod state;
 use state::AppState;
 
 mod ssh_client;
-use ssh_client::{SessionState, connect_ssh, send_ssh};
+use ssh_client::*;
+
+mod dfu_writer;
+use dfu_writer::{get_dfu_devices};
 
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -35,7 +38,10 @@ pub fn run() {
             Ok(())
         })
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![greet, get_name, connect_ssh, send_ssh])
+        .invoke_handler(tauri::generate_handler![
+            greet, get_name, connect_ssh, send_ssh, get_dfu_devices,
+            klipper_can_interface, klipper_can_uuid_list,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
