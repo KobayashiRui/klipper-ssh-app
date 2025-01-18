@@ -9,8 +9,7 @@
 
 	let connected_value: boolean;
 	connected.subscribe((value) => {
-		console.log("connected")
-		console.log(value)
+		console.log("connected:", value)
 		connected_value = value;
 	})
 
@@ -19,8 +18,15 @@
 			host, username, password, port: parseInt(port)
 		});
 		console.log(get_res)
-		if(get_res === "Connect SSH"){
+		if(get_res === "Connected"){
 			connected.update(()=>true);
+		}
+	}
+
+	async function disconnect() {
+		let get_res = await invoke('disconnect_ssh')
+		if(get_res === "Disconnected" || get_res === "NotConnected"){
+			connected.update(()=>false)
 		}
 	}
 
@@ -33,26 +39,35 @@
 </script>
 
 <div class="card p-4 flex gap-4 flex-col">
+	<div class="flex gap-4">
+		<h3 class="h3">SSH Connect</h3>
+		{#if connected_value}
+			<span class="chip variant-filled-sucess">Connected</span>
+		{:else}
+			<span class="chip variant-filled-error">Not connected</span>
+		{/if}
+	</div>
 	<div class="grid grid-cols-4 lg:grid-cols-4 gap-4">
 		<label class="label">
 			<span>host name</span>
-			<input id="host-input" placeholder="Enter a name..." bind:value={host} class="input" autocomplete="off"/>
+			<input id="host-input" placeholder="Enter a host name..." bind:value={host} class="input" autocomplete="off"/>
 		</label>
 		<label class="label">
 			<span>user name</span>
-			<input id="username-input" placeholder="Enter a name..." bind:value={username} class="input" autocomplete='off'/>
+			<input id="username-input" placeholder="Enter a user name..." bind:value={username} class="input" autocomplete='off'/>
 		</label>
 		<label class="label">
 			<span>password</span>
-			<input id="password-input" placeholder="Enter a name..." bind:value={password} class="input" autocomplete="off"/>
+			<input id="password-input" placeholder="Enter a password..." bind:value={password} class="input" autocomplete="off"/>
 		</label>
 		<label class="port">
 			<span>port</span>
-			<input id="password-input" placeholder="Enter a name..." bind:value={port} class="input number" autocomplete="off"/>
+			<input id="password-input" placeholder="Enter a port..." bind:value={port} class="input number" autocomplete="off"/>
 		</label>
-	</div>
+	</div>	
+
 	{#if connected_value}
-		<button class="btn variant-filled-success" on:click={connect} disabled>Connected!</button>
+		<button class="btn variant-filled" on:click={disconnect} disabled>Disconnect</button>
 	{:else}
 		<button class="btn variant-filled" on:click={connect}>Connect</button>
 	{/if}
