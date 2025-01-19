@@ -39,6 +39,7 @@ pub fn run() {
             greet,
             get_name,
             connect_ssh,
+            disconnect_ssh,
             send_ssh,
             get_dfu_devices,
             klipper_can_interface,

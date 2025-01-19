@@ -2,12 +2,15 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use tokio::io::AsyncWriteExt;
+use tokio::io;
 use tokio::net::ToSocketAddrs;
+use tokio::fs;
 
 //use clap::Parser;
 use russh::keys::*;
 use russh::*;
+//use russh_sftp::Sftp;
+use russh_sftp::{client::SftpSession, protocol::OpenFlags};
 
 #[derive(Default)]
 pub struct SessionState {
@@ -94,6 +97,29 @@ impl Session {
         }
         println!("END");
         Ok(code.expect("program did not exit cleanly").to_string())
+    }
+
+    pub async fn send_file(&mut self, local_path: &str, remote_path: &str) -> Result<String> {
+        let channel = self.session.channel_open_session().await.unwrap();
+        channel.request_subsystem(true, "sftp").await.unwrap();
+        let sftp = SftpSession::new(channel.into_stream()).await.unwrap();
+
+
+
+        //送信元のファイルパス
+        println!("Local file path {}", local_path);
+        println!("Remote file path {}", remote_path);
+
+        // ファイルを書き込む
+        let remote_file_flags = OpenFlags::CREATE | OpenFlags::TRUNCATE | OpenFlags::WRITE | OpenFlags::READ;
+        let mut remote_file = sftp.open_with_flags(remote_path, remote_file_flags)
+            .await
+            .unwrap();
+        let mut local_file = fs::File::open(local_path).await?;
+        io::copy(&mut local_file, &mut remote_file);
+
+
+        return Ok("Send Compliete".to_string())
     }
 
     pub async fn close(&mut self) -> Result<()> {

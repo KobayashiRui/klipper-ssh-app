@@ -1,5 +1,5 @@
 pub mod ssh_util;
-pub use ssh_util::{connect_ssh, send_ssh};
+pub use ssh_util::*;
 
 pub mod ssh;
 pub use ssh::SessionState;
