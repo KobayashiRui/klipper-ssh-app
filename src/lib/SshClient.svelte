@@ -42,7 +42,7 @@
 	<div class="flex gap-4">
 		<h3 class="h3">SSH Connect</h3>
 		{#if connected_value}
-			<span class="chip variant-filled-sucess">Connected</span>
+			<span class="chip variant-filled-success">Connected</span>
 		{:else}
 			<span class="chip variant-filled-error">Not connected</span>
 		{/if}
@@ -67,7 +67,7 @@
 	</div>	
 
 	{#if connected_value}
-		<button class="btn variant-filled" on:click={disconnect} disabled>Disconnect</button>
+		<button class="btn variant-filled-surface" on:click={disconnect}>Disconnect</button>
 	{:else}
 		<button class="btn variant-filled" on:click={connect}>Connect</button>
 	{/if}

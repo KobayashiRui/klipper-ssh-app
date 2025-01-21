@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use tokio::io;
 use tokio::net::ToSocketAddrs;
 use tokio::fs;
+use tokio::io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
 
 //use clap::Parser;
 use russh::keys::*;
@@ -99,7 +99,7 @@ impl Session {
         Ok(code.expect("program did not exit cleanly").to_string())
     }
 
-    pub async fn send_file(&mut self, local_path: &str, remote_path: &str) -> Result<String> {
+    pub async fn send_file(&mut self, local_path: String, remote_path: String) -> Result<String> {
         let channel = self.session.channel_open_session().await.unwrap();
         channel.request_subsystem(true, "sftp").await.unwrap();
         let sftp = SftpSession::new(channel.into_stream()).await.unwrap();
@@ -116,10 +116,21 @@ impl Session {
             .await
             .unwrap();
         let mut local_file = fs::File::open(local_path).await?;
-        io::copy(&mut local_file, &mut remote_file);
+        println!("Copy Start");
+        // バッファを用意 (例: 65KB)
+        let mut buffer = vec![0u8; 65536];
+        // ローカルファイルを読み取り、リモートファイルに書き込む
+        loop {
+            let bytes_read = local_file.read(&mut buffer).await?;
+            if bytes_read == 0 {
+                break; // EOF
+            }
+            remote_file.write_all(&buffer[..bytes_read]).await?;
+        }
+        //io::copy(&mut local_file, &mut remote_file).await?;
+        println!("Copy Completed!");
 
-
-        return Ok("Send Compliete".to_string())
+        Ok("SendCompleted".to_string())
     }
 
     pub async fn close(&mut self) -> Result<()> {

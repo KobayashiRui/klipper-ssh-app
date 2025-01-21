@@ -10,7 +10,7 @@ pub async fn connect_ssh(
     port: u16,
     state: State<'_, Mutex<SessionState>>,
 ) -> Result<String, String> {
-    let mut state = state.lock().await;
+    let mut state: tokio::sync::MutexGuard<'_, SessionState> = state.lock().await;
 
     let mut connect_res =
         Session::connect(username.to_string(), password.to_string(), (host, port)).await;
@@ -32,8 +32,7 @@ pub async fn disconnect_ssh(state: State<'_, Mutex<SessionState>>) -> Result<Str
 
     match &mut state.session {
         Some(session) => {
-            session.close();
-
+            session.close().await;
             return Ok("Disconnected".to_string());
         }
         None => {
