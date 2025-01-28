@@ -45,6 +45,7 @@ pub fn run() {
             klipper_can_interface,
             klipper_can_uuid_list,
             klipper_send_fw,
+            klipper_send_fluidd,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

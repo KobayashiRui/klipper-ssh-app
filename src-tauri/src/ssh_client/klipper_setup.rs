@@ -52,14 +52,52 @@ pub async fn klipper_send_fw(local_path: &str, state: State<'_, Mutex<SessionSta
 
           }
         }
-
       }
       None => {
         println!("Error")
       }
     }
+    Ok("FwUploadCompleted".to_string()) 
+}
 
-   Ok("FwUploadCompleted".to_string()) 
+#[tauri::command]
+pub async fn klipper_send_fluidd(local_path: &str, state: State<'_, Mutex<SessionState>>) -> Result<String, String> {
+    let mut state: tokio::sync::MutexGuard<'_, SessionState> = state.lock().await;
+
+    match &mut state.session {
+      Some(session) => {
+        let command = vec!["echo $HOME"];
+        let res = session.call(command).await;
+        if let Ok(home_path) = res {
+          let remote_path = home_path.replace("\n", "") + "/fluidd.zip";
+          println!("remote_path:{}", remote_path);
+          println!("local_path:{}", local_path);
+
+          let send_res = session.send_file(local_path.to_string(), remote_path).await;
+          match send_res {
+            Ok(send_res) => {
+              println!("send res: {}",send_res);
+              if send_res == "SendCompleted" {
+                //unzip command
+                let command = vec!["cd", "unzip -o fluidd.zip"];
+                let res = session.call(command).await;
+                if let Ok(unzip_res) = res {
+                  println!("unzip res: {}", unzip_res);
+                }
+              }
+            },
+            Err(error_res) => {
+              println!("error: {}", error_res)
+            }
+
+          }
+        }
+      }
+      None => {
+        println!("Error")
+      }
+    }
+    Ok("FluiddUploadCompleted".to_string()) 
 }
 
 #[tauri::command]
