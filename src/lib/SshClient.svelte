@@ -38,7 +38,7 @@
 
 </script>
 
-<div class="card p-4 flex gap-4 flex-col">
+<div class="card md:col-span-2 p-4 flex gap-4 flex-col">
 	<div class="flex gap-4">
 		<h3 class="h3">SSH Connect</h3>
 		{#if connected_value}
@@ -58,11 +58,11 @@
 		</label>
 		<label class="label">
 			<span>password</span>
-			<input id="password-input" placeholder="Enter a password..." bind:value={password} class="input" autocomplete="off"/>
+			<input id="password-input" type="password" placeholder="Enter a password..." bind:value={password} class="input" autocomplete="off"/>
 		</label>
 		<label class="port">
 			<span>port</span>
-			<input id="password-input" placeholder="Enter a port..." bind:value={port} class="input number" autocomplete="off"/>
+			<input id="port-input" placeholder="Enter a port..." bind:value={port} class="input number" autocomplete="off"/>
 		</label>
 	</div>	
 
